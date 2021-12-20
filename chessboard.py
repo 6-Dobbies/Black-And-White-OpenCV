@@ -1,93 +1,72 @@
 import numpy as np
 import cv2
 import sys
-import chess
-import chessboard
-import glob
+import matplotlib.pyplot as plt
 
-# 경로지정 이미지 불러오기 
-# img = cv2.imread('OpenCV/test_image/1.jpg')
+# 캐니엣지 한번 찾아보기, 급격하게 색이 바뀌는걸 강조표시
 
-# 사각형을 그리는 함수
-# def setLabel(img, pts, label):
-#     # 사각형 좌표 받아오기
-#     (x, y, w, h) = cv2.boundingRect(pts)
-#     pt1 = (x, y)
-#     pt2 = (x + w, y + h)
-#     cv2.rectangle(img, pt1, pt2, (0, 0, 255), 1)
-#     cv2.putText(img, label, pt1, cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255))
+#이미지 불러오기 경로
+src = cv2.imread('OpenCV/test_image/t_image/2d_test.jfif')
 
-
-img = cv2.imread('OpenCV/test_image/11.jpg', cv2.IMREAD_COLOR)
-
-# 이미지 사이즈 조절 
-dst = cv2.resize(img, dsize=(640, 480), interpolation=cv2.INTER_AREA)
-# dst2 = cv2.resize(img, dsize=(0, 0), fx=0.3, fy=0.7, interpolation=cv2.INTER_LINEAR)
-
-gray = cv2.cvtColor(dst, cv2.COLOR_RGB2GRAY)
-ret, binary = cv2.threshold(gray, 120, 255, cv2.THRESH_BINARY)
-binary = cv2.bitwise_not(binary)
-# binary = cv2.threshold(127,255, cv2.THRESH_BINARY)
-# binary = cv2.bitwise_not(binary)
-
-contours, hierarchy = cv2.findContours(binary, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
-
-for i in range(len(contours)):
-    cv2.drawContours(dst, [contours[i]], 0, (0, 0, 255), 2)
-    cv2.putText(dst, str(i), tuple(contours[i][0][0]), cv2.FONT_HERSHEY_COMPLEX, 0.8, (0, 255, 0), 1)
-    print(i, hierarchy[0][i])
-    # cv2.imshow("img", img)
-    # cv2.waitKey(0)
-
-
-    
-# if img is None:
-#     print('Image load failed!')
-#     return
-
-# 이미지 경로를 찾을 수 없을때 터미널에 출력
-if img is None:
+#이미지를 찾을수 없을시 콘솔창에 출력되는 문구
+if src is None: 
     print("이미지를 찾을 수 없습니다.")
     sys.exit()
 
-# cv2.namedWindow('image')
-# # 불러온이미지 팝업창 이름 지정
-cv2.imshow("popshow1", dst)
-# cv2.imshow("popshow2", dst)
-# cv2.imshow("popshow3", dst2)
-# # 키보드 입력 전 까지 창을 유지
-cv2.waitKey(0)
-# 팝업 된 모든 창을 닫음
-cv2.destroyAllWindows()
+#이미지 크기 조절 ( 테스트때 한눈에 보기 편하기 위한 사이즈 조절)
 
-#============================2번쨰 명암 조절============================================#
+src = cv2.resize(src, dsize=(640, 480), interpolation=cv2.INTER_AREA)
 
+#캐니에지, 대안님 요청= 선은 인식하였으나 흰백 장판 알수없음, 검은바탕에 흰색 선으로만 확인 가능
+def canny():
+    src = cv2.imread('OpenCV/test_image/t_image/2d_test.jfif')
 
-# src = cv2.imread('OpenCV/test_image/11.jpg', cv2.IMREAD_GRAYSCALE)
+    edge = cv2.Canny(src, 200, 320)
+    cv2.imshow('canny_src', edge)
+canny()
 
-# if src is None:
-#     print('Image load failed!')
-#     sys.exit()
+#이미지 평탄화(밝기값 위/아래 맞추기)
+height = src.shape[0]
+width = src.shape[1]
 
-# alpha = 1 # 기울기
-# dst = np.clip(((1 + alpha) * src - 128 * alpha), 0, 255).astype(np.uint8).copy()
+#이미지를 b, g, r 로 나눠서 각각 평탄화
+b, g, r = cv2.split(src)
+clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+cl_b = clahe.apply(b)
+cl_g = clahe.apply(g)
+cl_r = clahe.apply(r)
 
-# cv2.imshow('src', src)
-# cv2.imshow('dst', dst)
-# cv2.waitKey(0)
+src = cv2.merge([cl_b, cl_g, cl_r])
 
-# cv2.destroyAllWindows()
+#contrast 기울기 (대비)
+alpha = 10.0
+dst = np.clip(((1 + alpha) * src - 128 * alpha), 0, 255).astype(np.uint8)
 
+#입력된 변환값 확인을 위한 이미지 창띄우기
+cv2.imshow('dst', dst)
 
-# dst = cv2.normalize(src, None, 0, 255, cv2.NORM_MINMAX) # 히스토그램 스트레칭은 NORM_MINMAX
+src = dst
 
-# # 넘파이로 히스토그램 스트레칭 구현
-# gmin = np.min(src)
-# gmax = np.max(src)
-# dst = np.clip(((src - gmin) * 255. / (gmax - gmin), 0, 255).astype(np.unit8))
+gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
 
-# cv2.imshow('src', src)
-# cv2.imshow('dst', dst)
-# cv2.waitKey()
+#해당 부분 주석시 모서리 위주로만 인식
+# kernel = np.ones((3, 3), np.uint8)
+# gray = cv2.dilate(gray, kernel, iterations=2)
+# gray = cv2.erode(gray, kernel, iterations=2)
 
-# cv2.destroyAllWindows()
+#자동으로 binary 이미지 전환, 특정값 이상일때 흑과 백으로 표현
+gray = cv2.GaussianBlur(gray,(9,9),0)
+thresh_value, gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+gray = np.float32(gray)
+dst = cv2.cornerHarris(gray, 20, 3, 0.04)
+
+# dst = cv2.dilate(dst,None)
+
+#이미지에 따라 임계값이 다름, 확인 필요 
+src[dst>0.01*dst.max()]=[0,255,0]
+
+# #최종본 확인 및 저장 종료 적용
+cv2.imshow('cornerHarris',src)
+cv2.imwrite('OpenCV/test_image/t_image/76.jpg', src)
+cv2.waitKey()
