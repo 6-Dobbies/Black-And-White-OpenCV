@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 # 캐니엣지 한번 찾아보기, 급격하게 색이 바뀌는걸 강조표시
 
 #이미지 불러오기 경로
-src = cv2.imread('OpenCV/test_image/t_image/2d_test.jfif')
+src = cv2.imread('OpenCV/test_image/2D/b4.png')
 
 #이미지를 찾을수 없을시 콘솔창에 출력되는 문구
 if src is None: 
@@ -18,12 +18,12 @@ if src is None:
 src = cv2.resize(src, dsize=(640, 480), interpolation=cv2.INTER_AREA)
 
 #캐니에지, 대안님 요청= 선은 인식하였으나 흰백 장판 알수없음, 검은바탕에 흰색 선으로만 확인 가능
-def canny():
-    src = cv2.imread('OpenCV/test_image/t_image/2d_test.jfif')
+# def canny():
+#     src = cv2.imread('OpenCV/test_image/2D/c4.png')
 
-    edge = cv2.Canny(src, 200, 320)
-    cv2.imshow('canny_src', edge)
-canny()
+#     edge = cv2.Canny(src, 50, 200)
+#     cv2.imshow('canny_src', edge)
+# canny()
 
 #이미지 평탄화(밝기값 위/아래 맞추기)
 height = src.shape[0]
