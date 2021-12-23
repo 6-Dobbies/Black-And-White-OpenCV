@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 # 캐니엣지 한번 찾아보기, 급격하게 색이 바뀌는걸 강조표시
 
 #이미지 불러오기 경로
-src = cv2.imread('OpenCV/test_image/2D/b4.png')
+src = cv2.imread('OpenCV/test_image/2D/test.jpg')
 
 #이미지를 찾을수 없을시 콘솔창에 출력되는 문구
 if src is None: 
